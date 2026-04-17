@@ -1,0 +1,27 @@
+2026-04-17 18:05:21.375038+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENT" non trouvée
+Table "EVENT" not found; SQL statement:
+DELETE FROM EVENT
+WHERE ID NOT IN (
+    SELECT MIN(ID)
+    FROM EVENT
+    GROUP BY TITLE
+) [42102-224]
+2026-04-17 18:05:30.684054+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENT" non trouvée
+Table "EVENT" not found; SQL statement:
+DELETE FROM EVENTS
+WHERE ID NOT IN (
+    SELECT MIN(ID)
+    FROM EVENT
+    GROUP BY TITLE
+) [42102-224]
+2026-04-17 18:05:35.187316+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENT" non trouvée
+Table "EVENT" not found; SQL statement:
+DELETE FROM EVENTS
+WHERE ID NOT IN (
+    SELECT MIN(ID)
+    FROM EVENT
+    GROUP BY TITLE
+) [42102-224]

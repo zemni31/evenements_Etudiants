@@ -7,6 +7,7 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
     // Recherche par titre OU type (insensible à la casse)
     List<Event> findByTitleContainingIgnoreCaseOrTypeContainingIgnoreCase(
-            String title, String type
-    );
+            String title, String type  );
+            boolean existsByTitle(String title);
+
 }

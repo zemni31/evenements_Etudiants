@@ -13,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
@@ -45,32 +45,65 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/register", "" +
-                        "/login", "/css/**", "/js/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/search", true)
-                .permitAll()
-            )
-            .rememberMe(remember -> remember
-                .key("uniqueAndSecretKey")
-                .tokenValiditySeconds(86400 * 30) // 30 jours
-                .userDetailsService(customUserDetailsService)
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
-                .deleteCookies("JSESSIONID", "remember-me")
-                .permitAll()
-            );
+                // Configuration CSRF + Headers (recommandé)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                )
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
+                // ====================== FORM LOGIN ======================
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")           // Important
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/search", true)     // Après login → /search
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+
+                // ====================== AUTORISATIONS ======================
+                .authorizeHttpRequests(auth -> auth
+                        // Pages accessibles sans connexion
+                        .requestMatchers("/register",
+                                "/login",
+                                "/change-lang",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/h2-console/**")
+                        .permitAll()
+
+                        // Pages qui nécessitent d'être connecté
+                        .requestMatchers("/search", "/")
+                        .authenticated()
+
+                        // Toutes les autres URLs doivent être authentifiées
+                        .anyRequest().authenticated()
+                )
+
+                // Remember Me
+                .rememberMe(remember -> remember
+                        .key("uniqueAndSecretKey")
+                        .tokenValiditySeconds(86400 * 30)
+                        .userDetailsService(customUserDetailsService)
+                )
+
+                // Logout
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout")
+                        .deleteCookies("JSESSIONID", "remember-me")
+                        .permitAll()
+                );
+
         return http.build();
     }
+
     @Bean
     public LocaleResolver localeResolver() {
-        SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.FRENCH);
-        return slr;
+        CookieLocaleResolver resolver = new CookieLocaleResolver("lang");
+        resolver.setDefaultLocale(Locale.FRENCH);
+        resolver.setCookieMaxAge(3600);
+        return resolver;
     }
 }

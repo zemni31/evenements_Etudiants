@@ -28,4 +28,5 @@ public class Event {
 
     @Column
     private String location;
+
 }
